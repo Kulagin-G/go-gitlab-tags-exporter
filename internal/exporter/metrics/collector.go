@@ -1,9 +1,9 @@
 package metrics
 
 import (
-	. "git-tag-exporter/internal/config"
-	. "git-tag-exporter/internal/gitlab/v4"
 	"github.com/prometheus/client_golang/prometheus"
+	. "go-gitlab-tags-exporter/internal/config"
+	. "go-gitlab-tags-exporter/internal/gitlab/v4"
 	"golang.org/x/exp/slog"
 	"time"
 )
@@ -35,6 +35,12 @@ func (collector *CustomCollector) Collect(ch chan<- prometheus.Metric) {
 	generator := NewGenerator(collector.cfg, collector.log)
 	start := time.Now()
 	data := generator.GenerateData(collector.gl)
+
+	if data == nil {
+		collector.log.Warn("Skipping metric generation due to no data")
+		return
+	}
+
 	elapsed := time.Since(start).Seconds()
 
 	ch <- prometheus.MustNewConstMetric(

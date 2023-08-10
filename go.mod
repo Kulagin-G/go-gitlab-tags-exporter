@@ -1,4 +1,4 @@
-module git-tag-exporter
+module go-gitlab-tags-exporter
 
 go 1.20
 
@@ -7,6 +7,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/xanzy/go-gitlab v0.90.0
+	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 )
 

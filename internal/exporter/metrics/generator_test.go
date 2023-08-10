@@ -123,3 +123,50 @@ func TestParseTags(t *testing.T) {
 		t.Errorf("Returned %#+v, want %#+v", result, want)
 	}
 }
+
+func TestParseTagsNegative(t *testing.T) {
+	t.Log("[TEST]: Check ParseTags can handle empty slice of ProjectData.")
+
+	cfg := &Config{
+		Exporter: &Exporter{
+			GitlabApiToken:    "test-token",
+			GitlabUrl:         "test-url",
+			GitlabApiRetryMax: 5,
+			GoroutinesTimeout: 5,
+			GoroutinesMax:     5,
+			LogLevel:          "debug",
+		},
+		MetricsOptions: &MetricsOptions{
+			ReleaseTagRegex:          "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+			ReleaseCandidateTagRegex: "^[0-9]+\\.[0-9]+\\.[0-9]+-rc$",
+		},
+		Projects: []*ProjectConfigs{
+			{
+				Name: "test-project1",
+				Path: "test-group1/test-project1",
+			},
+			{
+				Name: "test-project2",
+				Path: "test-group2/test-project2",
+			},
+			{
+				Name: "test-project3",
+				Path: "test-group3/test-project3",
+			},
+		},
+	}
+
+	log := logger.SetupLogger(cfg)
+
+	data := []ProjectData{}
+
+	want := []ProjectDataSorted{}
+
+	gen := NewGenerator(cfg, log)
+
+	result := gen.ParseTags(data)
+
+	if !reflect.DeepEqual(want, result) {
+		t.Errorf("Returned %#+v, want %#+v", result, want)
+	}
+}

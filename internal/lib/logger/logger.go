@@ -1,7 +1,7 @@
 package logger
 
 import (
-	. "git-tag-exporter/internal/config"
+	. "go-gitlab-tags-exporter/internal/config"
 	"golang.org/x/exp/slog"
 	"os"
 	"strings"

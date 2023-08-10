@@ -1,12 +1,13 @@
 package main
 
 import (
-	"git-tag-exporter/internal/config"
-	. "git-tag-exporter/internal/exporter/healthz"
-	. "git-tag-exporter/internal/exporter/server"
-	. "git-tag-exporter/internal/gitlab/v4"
-	"git-tag-exporter/internal/lib/logger"
-	"git-tag-exporter/internal/lib/logger/sl"
+	"go-gitlab-tags-exporter/internal/config"
+	. "go-gitlab-tags-exporter/internal/exporter/healthz"
+	. "go-gitlab-tags-exporter/internal/exporter/server"
+	. "go-gitlab-tags-exporter/internal/gitlab/v4"
+	"go-gitlab-tags-exporter/internal/lib/logger"
+	"go-gitlab-tags-exporter/internal/lib/logger/sl"
+	_ "go.uber.org/automaxprocs"
 	"golang.org/x/exp/slog"
 	"os"
 	"os/signal"
