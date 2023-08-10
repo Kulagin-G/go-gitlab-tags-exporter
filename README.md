@@ -3,7 +3,7 @@ Simple Go application that converts the latest Gitlab's release and release-cand
 
 # Important
 The build includes `_ "go.uber.org/automaxprocs"` that automatically sets GOMAXPROCS to the number of available CPUs.
-It's very important id application wii be run in Kubernetes.
+It's very important if application will be run in Kubernetes.
 
 # Metrics example
 ```bash
