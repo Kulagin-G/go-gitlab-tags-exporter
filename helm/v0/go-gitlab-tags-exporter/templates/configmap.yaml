@@ -1,0 +1,10 @@
+{{- $configMap := toYaml .Values.config -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "go-gitlab-tags-exporter.fullname"  . }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  config.yaml: |
+    ---
+{{ tpl $configMap . | indent 4 }}

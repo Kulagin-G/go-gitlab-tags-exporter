@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "go-gitlab-tags-exporter.fullname" . }}
+  labels:
+    {{- include "go-gitlab-tags-exporter.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "go-gitlab-tags-exporter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "go-gitlab-tags-exporter.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "go-gitlab-tags-exporter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: {{ .Values.config.exporter.health.name | default "healthz" }}
+              containerPort: {{ .Values.config.exporter.health.port | default "8091" }}
+              protocol: TCP
+            - name: metrics
+              containerPort: {{ .Values.config.exporter.port | default "8090" }}
+              protocol: TCP
+          command: [ "./go-gitlab-tags-exporter" ]
+          livenessProbe:
+          {{- toYaml .Values.livenessProbe | nindent 12 }}
+            httpGet:
+              path: "/healthz/live"
+              port: {{ .Values.config.exporter.health.name | default "healthz" }}
+              scheme: HTTP
+          readinessProbe:
+          {{- toYaml .Values.readinessProbe | nindent 12 }}
+            httpGet:
+              path: "/healthz/ready"
+              port: {{ .Values.config.exporter.health.name | default "healthz" }}
+              scheme: HTTP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+            - name: GITLAB_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "go-gitlab-tags-exporter.fullname" . }}
+                  key: GITLAB_API_TOKEN
+                  optional: false
+            - name: EXPORTER_CONFIG_PATH
+              value: /go/config/config.yaml
+          volumeMounts:
+              - name: config-volume
+                mountPath: /go/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ template "go-gitlab-tags-exporter.fullname" . }}-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

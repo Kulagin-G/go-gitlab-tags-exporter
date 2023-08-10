@@ -1,0 +1,109 @@
+# Default values for go-gitlab-tags-exporter.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8090
+
+secrets:
+  defaultSecret:
+    enabled: true
+    annotations: {}
+  sealedSecret:
+    enabled: false
+    annotations:
+      sealedsecrets.bitnami.com/cluster-wide: "true"
+  data:
+    GITLAB_API_TOKEN: ""
+
+livenessProbe:
+  failureThreshold: 3
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+readinessProbe:
+  failureThreshold: 3
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  successThreshold: 1
+  timeoutSeconds: 5
+
+config:
+  exporter:
+    address: 0.0.0.0 # Address to bind.
+    port: 8090 # Port to bind.
+    logLevel: info  # info, debug
+    gitlabUrl: https://git.ringcentral.com
+    gitlabApiRetryMax: 5  # Max number of retries to reach Gitlab API.
+    goroutinesMax: 100  # Max number of goroutines.
+    goroutinesTimeout: 60s  # Timeout for goroutines in sec.
+    metricsEndpoint: /metrics  # Metrics endpoint.
+    health:  # Health endpoint.
+      port: 8091
+      name: healthz
+
+  metricsOptions:
+    releaseTagPattern: '^\d+\.\d+\.\d+$'
+    releaseCandidateTagPattern: '^\d+\.\d+\.\d+-rc$'
+
+  projects:
+    - name: experiments
+      path: sre/common/experiments
+    - name: infrastructure
+      path: sre/common/infrastructure
+
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

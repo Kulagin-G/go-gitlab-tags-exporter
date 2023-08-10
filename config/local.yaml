@@ -1,0 +1,35 @@
+#
+# THIS CONFIG FOR LOCAL TESTING ONLY !!!
+#
+#
+# THIS CONFIG FOR LOCAL TESTING ONLY !!!
+#
+#
+# THIS CONFIG FOR LOCAL TESTING ONLY !!!
+#
+---
+#
+# Main exporter configuration.
+#
+exporter:
+  address: 0.0.0.0  # Address to bind.
+  port: 8090  # Port to bind.
+  logLevel: info  # info, debug
+  gitlabUrl: https://gitlab.com  # Gitlab URL.
+  gitlabApiRetryMax: 5  # Max number of retries to reach Gitlab API.
+  goroutinesMax: 1000  # Max number of goroutines.
+  goroutinesTimeout: 60s  # Timeout for goroutines in sec.
+  metricsEndpoint: /metrics  # Metrics endpoint.
+  health:  # Health endpoint.
+    port: 8091
+    name: healthz
+
+metricsOptions:
+  releaseTagPattern: '^\d+\.\d+\.\d+$'
+  releaseCandidateTagPattern: '^\d+\.\d+\.\d+-rc$'
+
+projects:
+  - name: experiments
+    path: sre/common/experiments
+  - name: infrastructure
+    path: sre/common/infrastructure
