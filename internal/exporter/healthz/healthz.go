@@ -2,8 +2,8 @@ package healthz
 
 import (
 	"fmt"
-	. "git-tag-exporter/internal/config"
-	"git-tag-exporter/internal/gitlab/v4"
+	. "go-gitlab-tags-exporter/internal/config"
+	"go-gitlab-tags-exporter/internal/gitlab/v4"
 	"golang.org/x/exp/slog"
 	"io"
 	"log"

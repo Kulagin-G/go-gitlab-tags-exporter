@@ -1,6 +1,10 @@
 # go-gitlab-tags-exporter
 Simple Go application that converts the latest Gitlab's release and release-candidate tags to Prometheus metrics.
 
+# Important
+The build includes `_ "go.uber.org/automaxprocs"` that automatically sets GOMAXPROCS to the number of available CPUs.
+It's very important id application wii be run in Kubernetes.
+
 # Metrics example
 ```bash
 # HELP gitlab_tag_latest_info Returns the latest tag for a repo based on tag type

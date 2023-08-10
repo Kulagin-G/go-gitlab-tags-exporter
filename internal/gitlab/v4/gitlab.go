@@ -2,9 +2,9 @@ package gitlab
 
 import (
 	"context"
-	. "git-tag-exporter/internal/config"
-	"git-tag-exporter/internal/lib/logger/sl"
 	"github.com/xanzy/go-gitlab"
+	. "go-gitlab-tags-exporter/internal/config"
+	"go-gitlab-tags-exporter/internal/lib/logger/sl"
 	"golang.org/x/exp/slog"
 	"net/http"
 	"sync"
@@ -52,7 +52,7 @@ func NewClient(cfg *Config, log *slog.Logger) (*Gitlab, error) {
 	return gl, nil
 }
 
-func (g *Gitlab) tags(path string, ctx context.Context) []*gitlab.Tag {
+func (g *Gitlab) tags(path string, ctx context.Context) ([]*gitlab.Tag, error) {
 	ctxTimeout, cancel := context.WithTimeout(ctx, g.cfg.Exporter.GoroutinesTimeout)
 	defer cancel()
 
@@ -68,8 +68,7 @@ func (g *Gitlab) tags(path string, ctx context.Context) []*gitlab.Tag {
 		tags, resp, err := g.client.Tags.ListTags(path, opt, gitlab.WithContext(ctxTimeout))
 
 		if err != nil {
-			g.log.Error("Error during fetching Gitlab tags", sl.Err(err))
-			continue
+			return nil, err
 		}
 
 		g.log.Debug("Getting tags", slog.String("path", path), slog.Int("page", resp.NextPage))
@@ -83,13 +82,13 @@ func (g *Gitlab) tags(path string, ctx context.Context) []*gitlab.Tag {
 		opt.Page = resp.NextPage
 	}
 
-	return allTags
+	return allTags, nil
 }
 
 func (g *Gitlab) AllProjectsTags() []ProjectData {
 	projectsCount := len(g.cfg.Projects)
-	data := make([]ProjectData, projectsCount)
-
+	data := make([]ProjectData, 0, projectsCount)
+	mu := sync.Mutex{}
 	ctx := context.Background()
 
 	limiter := make(chan struct{}, g.cfg.Exporter.GoroutinesMax)
@@ -97,22 +96,41 @@ func (g *Gitlab) AllProjectsTags() []ProjectData {
 	wg := sync.WaitGroup{}
 	wg.Add(projectsCount)
 
-	for i, project := range g.cfg.Projects {
+	for _, project := range g.cfg.Projects {
 		limiter <- struct{}{}
-		go func(idx int, project *ProjectConfigs) {
+		go func(project *ProjectConfigs) {
 			g.log.Info("Getting tags from project", slog.String("name", project.Name))
-			t := g.tags(project.Path, ctx)
 
-			data[idx] = ProjectData{
+			t, err := g.tags(project.Path, ctx)
+
+			if err != nil {
+				g.log.Error("Finish goroutine for project", slog.String("name", project.Name), sl.Err(err))
+				wg.Done()
+				<-limiter
+
+				return
+			}
+
+			if len(t) == 0 {
+				g.log.Warn("Project has no tags", slog.String("name", project.Name))
+				wg.Done()
+				<-limiter
+
+				return
+			}
+
+			mu.Lock()
+			data = append(data, ProjectData{
 				Name:       project.Name,
 				Path:       project.Path,
 				Repository: project.Repository,
 				Tags:       t,
-			}
+			})
+			mu.Unlock()
 
 			wg.Done()
 			<-limiter
-		}(i, project)
+		}(project)
 	}
 
 	wg.Wait()

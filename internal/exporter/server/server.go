@@ -1,13 +1,13 @@
 package server
 
 import (
-	. "git-tag-exporter/internal/config"
-	. "git-tag-exporter/internal/exporter/metrics"
-	. "git-tag-exporter/internal/gitlab/v4"
-	"git-tag-exporter/internal/lib/logger/sl"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	. "go-gitlab-tags-exporter/internal/config"
+	. "go-gitlab-tags-exporter/internal/exporter/metrics"
+	. "go-gitlab-tags-exporter/internal/gitlab/v4"
+	"go-gitlab-tags-exporter/internal/lib/logger/sl"
 	"golang.org/x/exp/slog"
 	"net/http"
 	"os"

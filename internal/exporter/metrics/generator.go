@@ -1,11 +1,11 @@
 package metrics
 
 import (
-	. "git-tag-exporter/internal/config"
-	. "git-tag-exporter/internal/gitlab/v4"
-	"git-tag-exporter/internal/lib/logger/sl"
 	"github.com/Masterminds/semver/v3"
 	"github.com/xanzy/go-gitlab"
+	. "go-gitlab-tags-exporter/internal/config"
+	. "go-gitlab-tags-exporter/internal/gitlab/v4"
+	"go-gitlab-tags-exporter/internal/lib/logger/sl"
 	"golang.org/x/exp/slog"
 	. "regexp"
 	"sort"
@@ -34,6 +34,12 @@ func NewGenerator(cfg *Config, log *slog.Logger) *Generator {
 
 func (g *Generator) GenerateData(gl *Gitlab) []ProjectDataSorted {
 	allTags := gl.AllProjectsTags()
+
+	if len(allTags) == 0 {
+		g.log.Warn("No tags found or during parsing tags error occurred")
+		return nil
+	}
+
 	return g.ParseTags(allTags)
 }
 
@@ -56,6 +62,12 @@ func (g *Generator) ParseTags(data []ProjectData) []ProjectDataSorted {
 func (g *Generator) sortTags(tags []*gitlab.Tag, tagType string) *gitlab.Tag {
 	rcTags := make([]*semver.Version, 0, len(tags))
 	relTags := make([]*semver.Version, 0, len(tags))
+
+	if len(tags) == 0 {
+		return &gitlab.Tag{
+			Name: "notFound",
+		}
+	}
 
 	for _, tag := range tags {
 		v, err := semver.NewVersion(tag.Name)
