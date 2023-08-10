@@ -2,9 +2,9 @@ package gitlab
 
 import (
 	"fmt"
-	. "git-tag-exporter/internal/config"
-	"git-tag-exporter/internal/lib/logger"
 	"github.com/xanzy/go-gitlab"
+	. "go-gitlab-tags-exporter/internal/config"
+	"go-gitlab-tags-exporter/internal/lib/logger"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
